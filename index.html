@@ -285,10 +285,10 @@
 
                 // Calculate scratch box position (approximately where it appears on the label)
                 // Based on your image, the scratch box is on the left side, over the QR code
-                const boxWidth = this.canvas.width * 0.35; // ~35% of label width
-                const boxHeight = this.canvas.height * 0.35; // ~35% of label height
-                const boxX = this.canvas.width * 0.15; // Starting ~15% from left
-                const boxY = this.canvas.height * 0.35; // Starting ~35% from top
+                const boxWidth = this.canvas.width * 0.22;  // Width as % of label
+                const boxHeight = this.canvas.height * 0.28; // Height as % of label  
+                const boxX = this.canvas.width * 0.185;     // Distance from left edge
+                const boxY = this.canvas.height * 0.43;     // Distance from top edge
 
                 // Draw the scratch overlay only in the box area
                 this.ctx.drawImage(
