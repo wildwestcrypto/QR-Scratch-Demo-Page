@@ -278,26 +278,21 @@
             }
 
             init() {
-                // Set canvas size to match the base image
+                // Set canvas size to match the base image exactly
                 const baseLabel = document.getElementById('baseLabel');
                 this.canvas.width = baseLabel.offsetWidth;
                 this.canvas.height = baseLabel.offsetHeight;
 
-                // Calculate scratch box position (approximately where it appears on the label)
-                // Based on your image, the scratch box is on the left side, over the QR code
-                const boxWidth = this.canvas.width * 0.55;  // Width as % of label
-                const boxHeight = this.canvas.height * 0.70; // Height as % of label  
-                const boxX = this.canvas.width * 0.185;     // Distance from left edge
-                const boxY = this.canvas.height * 0.43;     // Distance from top edge
-
-                // Draw the scratch overlay only in the box area
+                // Draw the scratch overlay at full size (1:1 overlay)
+                // Since your images are already aligned as layers, no positioning needed
                 this.ctx.drawImage(
                     this.overlayImage, 
-                    boxX, boxY, 
-                    boxWidth, boxHeight
+                    0, 0,
+                    this.canvas.width, 
+                    this.canvas.height
                 );
 
-                this.totalPixels = boxWidth * boxHeight;
+                this.totalPixels = this.canvas.width * this.canvas.height;
             }
 
             setupEventListeners() {
