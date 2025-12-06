@@ -268,7 +268,9 @@
                 this.isScratching = false;
                 this.scratchedPixels = 0;
                 this.totalPixels = 0;
-                this.threshold = 0.4; // 40% scratched triggers auto-complete
+                this.threshold = 0.65; // 65% scratched triggers auto-complete (increased from 40%)
+                this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                this.lastProgressCheck = 0; // Throttle progress checks
                 
                 this.overlayImage.onload = () => {
                     this.init();
@@ -282,6 +284,20 @@
                 const baseLabel = document.getElementById('baseLabel');
                 this.canvas.width = baseLabel.offsetWidth;
                 this.canvas.height = baseLabel.offsetHeight;
+
+                // If mobile, show message and auto-reveal after delay
+                if (this.isMobile) {
+                    document.querySelector('.instruction p').innerHTML = '📱 Mobile detected - Tap the button below';
+                    document.getElementById('skipButton').innerText = 'Tap to Verify →';
+                    document.getElementById('skipButton').style.opacity = '1';
+                    document.getElementById('skipButton').style.animation = 'none';
+                    document.getElementById('skipButton').onclick = () => {
+                        // Replace with your actual verification page URL
+                        window.location.href = 'https://evrgn.org';
+                    };
+                    this.completeReveal();
+                    return;
+                }
 
                 // Draw the scratch overlay at full size (1:1 overlay)
                 // Since your images are already aligned as layers, no positioning needed
@@ -337,10 +353,10 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
-                // Set up eraser
+                // Set up eraser with smaller brush for more realistic scratching
                 this.ctx.globalCompositeOperation = 'destination-out';
                 this.ctx.beginPath();
-                this.ctx.arc(x, y, 20, 0, Math.PI * 2);
+                this.ctx.arc(x, y, 15, 0, Math.PI * 2); // Reduced from 20 to 15
                 this.ctx.fill();
 
                 // Create particle effect
@@ -371,6 +387,11 @@
             }
 
             checkScratchProgress() {
+                // Throttle checks to every 100ms to prevent instant auto-complete
+                const now = Date.now();
+                if (now - this.lastProgressCheck < 100) return;
+                this.lastProgressCheck = now;
+
                 const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
                 let transparentPixels = 0;
 
