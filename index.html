@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evergreen Exchange - Scratch & Verify Demo</title>
+    <style>
+        :root {
+            --gold: #d1b26b;
+            --ink: #141518;
+            --ink-soft: #535763;
+            --forest: #507a6f;
+            --ovi-green: #178f6f;
+            --cream: #f3f3eb;
+            --bg: #050708;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+            color: var(--cream);
+            background: radial-gradient(circle at top left, #101821 0, var(--bg) 52%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .demo-container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            color: var(--cream);
+            font-size: 2.5em;
+            font-weight: 300;
+            letter-spacing: 0.01em;
+            margin-bottom: 10px;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+        }
+
+        .header p {
+            color: #c2c8d4;
+            font-size: 1.1em;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .label-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            border: 1px solid rgba(0, 0, 0, 0.18);
+            border-radius: 16px;
+            background: rgba(12, 16, 18, 0.88);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
+        }
+
+        .label-container::before {
+            content: '';
+            position: absolute;
+            inset: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(72, 97, 91, 0.6);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .label-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(0, 0, 0, 0.08),
+                transparent 55%
+            );
+            opacity: 0.32;
+            mix-blend-mode: multiply;
+            z-index: 2;
+        }
+
+        .base-label {
+            display: block;
+            width: 100%;
+            height: auto;
+            user-select: none;
+            border-radius: 12px;
+            filter: contrast(0.96) saturate(0.94) brightness(0.97);
+        }
+
+        .scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="%23d1b26b" stroke="%23b89954" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="%23e0c878" opacity="0.6"/><text x="16" y="20" font-size="12" text-anchor="middle" fill="%23141518" font-weight="bold">¢</text></svg>') 16 16, auto;
+            touch-action: none;
+            z-index: 3;
+        }
+
+        .scratch-canvas.scratching {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="%23e0c878" stroke="%23b89954" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="%23d1b26b" opacity="0.8"/><text x="16" y="20" font-size="12" text-anchor="middle" fill="%23141518" font-weight="bold">¢</text></svg>') 16 16, auto;
+        }
+
+        .instruction {
+            margin-top: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .instruction p {
+            color: var(--cream);
+            font-size: 1.2em;
+            font-weight: 500;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+        }
+
+        .skip-button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--gold), #e0c878);
+            color: var(--ink);
+            font-size: 1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeIn 0.5s ease 3s forwards;
+            font-weight: 500;
+        }
+
+        .skip-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(209, 178, 107, 0.4);
+        }
+
+        .skip-button:active {
+            transform: translateY(0);
+        }
+
+        .particles {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 4;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #c0c0c0;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 1s ease-out forwards;
+        }
+
+        @keyframes float {
+            to {
+                transform: translate(var(--tx), var(--ty));
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .header p {
+                font-size: 1em;
+            }
+            
+            .instruction p {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="header">
+            <h1>Evergreen Certified</h1>
+            <p>Experience our premium verification system</p>
+        </div>
+
+        <div class="label-container">
+            <img src="clean_label_no_scratch.png" alt="Evergreen Certified Label" class="base-label" id="baseLabel">
+            <canvas id="scratchCanvas" class="scratch-canvas"></canvas>
+            <div class="particles" id="particles"></div>
+        </div>
+
+        <div class="instruction">
+            <p>✨ Scratch to reveal the QR code ✨</p>
+        </div>
+
+        <button class="skip-button" id="skipButton">Skip to reveal</button>
+    </div>
+
+    <script>
+        class ScratchCard {
+            constructor(canvasId, overlayImage) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.overlayImage = new Image();
+                this.overlayImage.src = overlayImage;
+                this.isScratching = false;
+                this.scratchedPixels = 0;
+                this.totalPixels = 0;
+                this.threshold = 0.4; // 40% scratched triggers auto-complete
+                
+                this.overlayImage.onload = () => {
+                    this.init();
+                };
+
+                this.setupEventListeners();
+            }
+
+            init() {
+                // Set canvas size to match the base image
+                const baseLabel = document.getElementById('baseLabel');
+                this.canvas.width = baseLabel.offsetWidth;
+                this.canvas.height = baseLabel.offsetHeight;
+
+                // Calculate scratch box position (approximately where it appears on the label)
+                // Based on your image, the scratch box is on the left side, over the QR code
+                const boxWidth = this.canvas.width * 0.35; // ~35% of label width
+                const boxHeight = this.canvas.height * 0.35; // ~35% of label height
+                const boxX = this.canvas.width * 0.15; // Starting ~15% from left
+                const boxY = this.canvas.height * 0.35; // Starting ~35% from top
+
+                // Draw the scratch overlay only in the box area
+                this.ctx.drawImage(
+                    this.overlayImage, 
+                    boxX, boxY, 
+                    boxWidth, boxHeight
+                );
+
+                this.totalPixels = boxWidth * boxHeight;
+            }
+
+            setupEventListeners() {
+                // Mouse events
+                this.canvas.addEventListener('mousedown', (e) => this.startScratching(e));
+                this.canvas.addEventListener('mousemove', (e) => this.scratch(e));
+                this.canvas.addEventListener('mouseup', () => this.stopScratching());
+                this.canvas.addEventListener('mouseleave', () => this.stopScratching());
+
+                // Touch events
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.startScratching(e.touches[0]);
+                });
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    this.scratch(e.touches[0]);
+                });
+                this.canvas.addEventListener('touchend', () => this.stopScratching());
+
+                // Skip button
+                document.getElementById('skipButton').addEventListener('click', () => {
+                    this.completeReveal();
+                });
+
+                // Resize handler
+                window.addEventListener('resize', () => {
+                    this.init();
+                });
+            }
+
+            startScratching(e) {
+                this.isScratching = true;
+                this.canvas.classList.add('scratching');
+                this.scratch(e);
+            }
+
+            scratch(e) {
+                if (!this.isScratching) return;
+
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Set up eraser
+                this.ctx.globalCompositeOperation = 'destination-out';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 20, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // Create particle effect
+                this.createParticles(x, y);
+
+                // Check scratch percentage
+                this.checkScratchProgress();
+            }
+
+            stopScratching() {
+                this.isScratching = false;
+                this.canvas.classList.remove('scratching');
+            }
+
+            createParticles(x, y) {
+                const particleContainer = document.getElementById('particles');
+                for (let i = 0; i < 3; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.setProperty('--tx', `${(Math.random() - 0.5) * 50}px`);
+                    particle.style.setProperty('--ty', `${(Math.random() - 0.5) * 50}px`);
+                    particleContainer.appendChild(particle);
+
+                    setTimeout(() => particle.remove(), 1000);
+                }
+            }
+
+            checkScratchProgress() {
+                const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                let transparentPixels = 0;
+
+                for (let i = 3; i < imageData.data.length; i += 4) {
+                    if (imageData.data[i] === 0) {
+                        transparentPixels++;
+                    }
+                }
+
+                const scratchPercentage = transparentPixels / (this.canvas.width * this.canvas.height);
+
+                if (scratchPercentage > this.threshold) {
+                    this.completeReveal();
+                }
+            }
+
+            completeReveal() {
+                // Smooth fade out animation
+                this.canvas.style.transition = 'opacity 0.5s ease';
+                this.canvas.style.opacity = '0';
+                
+                setTimeout(() => {
+                    this.canvas.style.display = 'none';
+                    document.querySelector('.instruction').innerHTML = '<p>📱 Scan the QR code with your phone</p>';
+                    document.getElementById('skipButton').style.display = 'none';
+                }, 500);
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            new ScratchCard('scratchCanvas', 'silver_scratch_transparent.png');
+        });
+    </script>
+</body>
+</html>
