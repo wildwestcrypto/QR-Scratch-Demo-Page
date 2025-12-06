@@ -285,18 +285,25 @@
                 this.canvas.width = baseLabel.offsetWidth;
                 this.canvas.height = baseLabel.offsetHeight;
 
-                // If mobile, show message and auto-reveal after delay
+                // If mobile, show message and direct link button
                 if (this.isMobile) {
-                    document.querySelector('.instruction p').innerHTML = '📱 Mobile detected - Tap the button below';
-                    document.getElementById('skipButton').innerText = 'Tap to Verify →';
-                    document.getElementById('skipButton').style.opacity = '1';
-                    document.getElementById('skipButton').style.animation = 'none';
-                    document.getElementById('skipButton').onclick = () => {
+                    // Hide the canvas scratch layer
+                    this.canvas.style.display = 'none';
+                    
+                    // Update instruction
+                    document.querySelector('.instruction p').innerHTML = '📱 Tap the button below to verify';
+                    
+                    // Show and reconfigure the button
+                    const skipButton = document.getElementById('skipButton');
+                    skipButton.innerText = 'Tap to Verify Product →';
+                    skipButton.style.opacity = '1';
+                    skipButton.style.animation = 'none';
+                    skipButton.onclick = (e) => {
+                        e.preventDefault();
                         // Replace with your actual verification page URL
                         window.location.href = 'https://evrgn.org';
                     };
-                    this.completeReveal();
-                    return;
+                    return; // Don't draw scratch overlay or call completeReveal
                 }
 
                 // Draw the scratch overlay at full size (1:1 overlay)
