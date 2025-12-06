@@ -271,6 +271,8 @@
                 this.threshold = 0.65; // 65% scratched triggers auto-complete (increased from 40%)
                 this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 this.lastProgressCheck = 0; // Throttle progress checks
+                this.scratchStartTime = null; // Track when scratching started
+                this.minScratchTime = 2000; // Minimum 2 seconds of scratching before auto-complete
                 
                 this.overlayImage.onload = () => {
                     this.init();
@@ -300,7 +302,6 @@
                     skipButton.style.animation = 'none';
                     skipButton.onclick = (e) => {
                         e.preventDefault();
-                        // Replace with your actual verification page URL
                         window.location.href = 'https://evrgn.org';
                     };
                     return; // Don't draw scratch overlay or call completeReveal
@@ -350,6 +351,12 @@
             startScratching(e) {
                 this.isScratching = true;
                 this.canvas.classList.add('scratching');
+                
+                // Record when scratching started (for minimum time requirement)
+                if (!this.scratchStartTime) {
+                    this.scratchStartTime = Date.now();
+                }
+                
                 this.scratch(e);
             }
 
@@ -394,6 +401,11 @@
             }
 
             checkScratchProgress() {
+                // Don't check progress if minimum scratch time hasn't elapsed
+                if (!this.scratchStartTime || (Date.now() - this.scratchStartTime < this.minScratchTime)) {
+                    return;
+                }
+
                 // Throttle checks to every 100ms to prevent instant auto-complete
                 const now = Date.now();
                 if (now - this.lastProgressCheck < 100) return;
