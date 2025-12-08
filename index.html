@@ -57,6 +57,10 @@
             font-family: 'Franklin Gothic Medium', 'Helvetica Neue', 'Arial Narrow', Arial, sans-serif;
         }
 
+        .evergreen-text {
+            color: #115740;
+        }
+
         .header p {
             color: #c2c8d4;
             font-size: 1.1em;
@@ -249,6 +253,61 @@
             }
         }
 
+        .scratch-prompt-button {
+            display: inline-block;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, var(--gold), #e0c878);
+            color: var(--ink);
+            font-size: 1.3em;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 
+                0 0 30px rgba(209, 178, 107, 0.6),
+                0 0 60px rgba(209, 178, 107, 0.4),
+                0 8px 24px rgba(0, 0, 0, 0.3);
+            animation: pulseGoldGlow 2s ease-in-out infinite;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            pointer-events: none;
+        }
+
+        .scratch-prompt-overlay {
+            position: absolute;
+            left: 33%;
+            top: 25%;
+            transform: translateX(-50%);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .scratch-prompt-overlay::before {
+            content: '';
+            position: absolute;
+            inset: -15px;
+            background: rgba(5, 7, 8, 0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            z-index: -1;
+        }
+
+        @keyframes pulseGoldGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 30px rgba(209, 178, 107, 0.6),
+                    0 0 60px rgba(209, 178, 107, 0.4),
+                    0 8px 24px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    0 0 40px rgba(209, 178, 107, 0.9),
+                    0 0 80px rgba(209, 178, 107, 0.6),
+                    0 8px 24px rgba(0, 0, 0, 0.3);
+            }
+        }
+
         .particles {
             position: absolute;
             pointer-events: none;
@@ -329,7 +388,17 @@
 
             .button-overlay {
                 left: 50%;
-                top: 70%;
+                top: 75%;
+            }
+
+            .scratch-prompt-overlay {
+                left: 50%;
+                top: 65%;
+            }
+
+            .scratch-prompt-button {
+                font-size: 1.1em;
+                padding: 14px 30px;
             }
 
             .scan-button {
@@ -342,7 +411,7 @@
 <body>
     <div class="demo-container">
         <div class="header">
-            <h1>The Evergreen Exchange</h1>
+            <h1>The <span class="evergreen-text">Evergreen</span> Exchange</h1>
             <p>Experience our premium verification system</p>
         </div>
 
@@ -351,6 +420,9 @@
                 <img src="clean_label_no_scratch.png" alt="Evergreen Certified Label" class="base-label" id="baseLabel">
                 <canvas id="scratchCanvas" class="scratch-canvas"></canvas>
                 <div class="particles" id="particles"></div>
+            </div>
+            <div class="scratch-prompt-overlay" id="scratchPrompt">
+                <button class="scratch-prompt-button">✨ Scratch To Reveal</button>
             </div>
         </div>
 
@@ -395,6 +467,12 @@
                     // Hide the canvas scratch layer
                     this.canvas.style.display = 'none';
                     
+                    // Hide the scratch prompt
+                    const scratchPrompt = document.getElementById('scratchPrompt');
+                    if (scratchPrompt) {
+                        scratchPrompt.style.display = 'none';
+                    }
+                    
                     // Update instruction
                     document.querySelector('.instruction p').innerHTML = '📱 Tap the button below to verify';
                     
@@ -420,6 +498,18 @@
                 );
 
                 this.totalPixels = this.canvas.width * this.canvas.height;
+
+                // Auto-fade the scratch prompt button after 5 seconds
+                const scratchPrompt = document.getElementById('scratchPrompt');
+                if (scratchPrompt) {
+                    setTimeout(() => {
+                        scratchPrompt.style.transition = 'opacity 1s ease';
+                        scratchPrompt.style.opacity = '0';
+                        setTimeout(() => {
+                            scratchPrompt.style.display = 'none';
+                        }, 1000);
+                    }, 5000);
+                }
             }
 
             setupEventListeners() {
@@ -442,6 +532,11 @@
 
                 // Skip button
                 document.getElementById('skipButton').addEventListener('click', () => {
+                    // Hide scratch prompt
+                    const scratchPrompt = document.getElementById('scratchPrompt');
+                    if (scratchPrompt) {
+                        scratchPrompt.style.display = 'none';
+                    }
                     this.completeReveal();
                 });
 
@@ -454,6 +549,16 @@
             startScratching(e) {
                 this.isScratching = true;
                 this.canvas.classList.add('scratching');
+                
+                // Hide the scratch prompt button
+                const scratchPrompt = document.getElementById('scratchPrompt');
+                if (scratchPrompt) {
+                    scratchPrompt.style.transition = 'opacity 0.3s ease';
+                    scratchPrompt.style.opacity = '0';
+                    setTimeout(() => {
+                        scratchPrompt.style.display = 'none';
+                    }, 300);
+                }
                 
                 // Record when scratching started (for minimum time requirement)
                 if (!this.scratchStartTime) {
@@ -546,8 +651,21 @@
                     const labelContainer = document.querySelector('.label-container');
                     const buttonOverlay = document.createElement('div');
                     buttonOverlay.className = 'button-overlay';
-                    buttonOverlay.innerHTML = '<button class="scan-button" onclick="alert(\'Point your phone camera at the QR code on screen to verify this product\')"><span class="scan-button-icon">📱</span>Now Scan QR With Phone</button>';
+                    buttonOverlay.id = 'scanButtonOverlay';
+                    buttonOverlay.innerHTML = '<button class="scan-button" onclick="document.getElementById(\'scanButtonOverlay\').remove()"><span class="scan-button-icon">📱</span>Now Scan QR With Phone</button>';
                     labelContainer.appendChild(buttonOverlay);
+                    
+                    // Auto-fade the button after 5 seconds so it doesn't block the QR code
+                    setTimeout(() => {
+                        buttonOverlay.style.transition = 'opacity 1s ease';
+                        buttonOverlay.style.opacity = '0';
+                        setTimeout(() => {
+                            buttonOverlay.remove();
+                            // Show subtle instruction below the label
+                            document.querySelector('.instruction').style.display = 'block';
+                            document.querySelector('.instruction').innerHTML = '<p style="font-size: 1em; opacity: 0.8;">📱 Point your phone camera at the QR code</p>';
+                        }, 1000);
+                    }, 5000);
                 }, 500);
             }
         }
