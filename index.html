@@ -137,7 +137,6 @@
 
         .instruction {
             margin-top: 30px;
-            animation: pulse 2s ease-in-out infinite;
         }
 
         .instruction p {
@@ -426,7 +425,7 @@
             </div>
         </div>
 
-        <div class="instruction">
+        <div class="instruction" style="opacity: 0; transition: opacity 1s ease;">
             <p>✨ Scratch to reveal the QR code ✨</p>
         </div>
 
@@ -473,8 +472,10 @@
                         scratchPrompt.style.display = 'none';
                     }
                     
-                    // Update instruction
-                    document.querySelector('.instruction p').innerHTML = '📱 Tap the button below to verify';
+                    // Update instruction and show it
+                    const instruction = document.querySelector('.instruction');
+                    instruction.style.opacity = '1';
+                    instruction.querySelector('p').innerHTML = '📱 Tap the button below to verify';
                     
                     // Show and reconfigure the button
                     const skipButton = document.getElementById('skipButton');
@@ -505,6 +506,13 @@
                     setTimeout(() => {
                         scratchPrompt.style.transition = 'opacity 1s ease';
                         scratchPrompt.style.opacity = '0';
+                        
+                        // Fade in the instruction text as the button fades out
+                        const instruction = document.querySelector('.instruction');
+                        if (instruction) {
+                            instruction.style.opacity = '1';
+                        }
+                        
                         setTimeout(() => {
                             scratchPrompt.style.display = 'none';
                         }, 1000);
@@ -537,6 +545,13 @@
                     if (scratchPrompt) {
                         scratchPrompt.style.display = 'none';
                     }
+                    
+                    // Fade in instruction text briefly
+                    const instruction = document.querySelector('.instruction');
+                    if (instruction) {
+                        instruction.style.opacity = '1';
+                    }
+                    
                     this.completeReveal();
                 });
 
@@ -558,6 +573,12 @@
                     setTimeout(() => {
                         scratchPrompt.style.display = 'none';
                     }, 300);
+                }
+                
+                // Fade in the instruction text
+                const instruction = document.querySelector('.instruction');
+                if (instruction) {
+                    instruction.style.opacity = '1';
                 }
                 
                 // Record when scratching started (for minimum time requirement)
