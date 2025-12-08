@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evergreen Exchange - Scratch & Verify Demo</title>
+    <title>The Evergreen Exchange - Scratch & Verify Demo</title>
     <style>
         :root {
             --gold: #d1b26b;
@@ -48,11 +48,13 @@
 
         .header h1 {
             color: var(--cream);
-            font-size: 2.5em;
-            font-weight: 300;
-            letter-spacing: 0.01em;
+            font-size: 2.8em;
+            font-weight: 700;
+            letter-spacing: 0.08em;
             margin-bottom: 10px;
-            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            text-transform: uppercase;
+            font-family: 'Franklin Gothic Medium', 'Helvetica Neue', 'Arial Narrow', Arial, sans-serif;
         }
 
         .header p {
@@ -69,11 +71,18 @@
             border-radius: 16px;
             background: rgba(12, 16, 18, 0.88);
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-            overflow: hidden;
+            overflow: visible;
             animation: fadeInUp 0.8s ease 0.2s backwards;
         }
 
-        .label-container::before {
+        .label-wrapper {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+
+        .label-wrapper::before {
             content: '';
             position: absolute;
             inset: 10px;
@@ -83,7 +92,7 @@
             z-index: 1;
         }
 
-        .label-container::after {
+        .label-wrapper::after {
             content: '';
             position: absolute;
             inset: 0;
@@ -156,6 +165,88 @@
 
         .skip-button:active {
             transform: translateY(0);
+        }
+
+        .scan-button {
+            display: inline-block;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, var(--ovi-green), #1fa885);
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 
+                0 0 30px rgba(23, 143, 111, 0.6),
+                0 0 60px rgba(23, 143, 111, 0.4),
+                0 8px 24px rgba(0, 0, 0, 0.3);
+            animation: pulseGlow 2s ease-in-out infinite, fadeInUp 0.6s ease;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .button-overlay {
+            position: absolute;
+            left: 27%;
+            top: 60%;
+            transform: translateX(-50%);
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        .button-overlay::before {
+            content: '';
+            position: absolute;
+            inset: -15px;
+            background: rgba(5, 7, 8, 0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            z-index: -1;
+        }
+
+        .scan-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 0 40px rgba(23, 143, 111, 0.8),
+                0 0 80px rgba(23, 143, 111, 0.5),
+                0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .scan-button:active {
+            transform: translateY(-1px) scale(1);
+        }
+
+        .scan-button-icon {
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 1.2em;
+            animation: phoneBounce 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 30px rgba(23, 143, 111, 0.6),
+                    0 0 60px rgba(23, 143, 111, 0.4),
+                    0 8px 24px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    0 0 40px rgba(23, 143, 111, 0.9),
+                    0 0 80px rgba(23, 143, 111, 0.6),
+                    0 8px 24px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        @keyframes phoneBounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-3px);
+            }
         }
 
         .particles {
@@ -235,20 +326,32 @@
             .instruction p {
                 font-size: 1em;
             }
+
+            .button-overlay {
+                left: 50%;
+                top: 70%;
+            }
+
+            .scan-button {
+                font-size: 1.1em;
+                padding: 14px 30px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="demo-container">
         <div class="header">
-            <h1>Evergreen Certified</h1>
+            <h1>The Evergreen Exchange</h1>
             <p>Experience our premium verification system</p>
         </div>
 
         <div class="label-container">
-            <img src="clean_label_no_scratch.png" alt="Evergreen Certified Label" class="base-label" id="baseLabel">
-            <canvas id="scratchCanvas" class="scratch-canvas"></canvas>
-            <div class="particles" id="particles"></div>
+            <div class="label-wrapper">
+                <img src="clean_label_no_scratch.png" alt="Evergreen Certified Label" class="base-label" id="baseLabel">
+                <canvas id="scratchCanvas" class="scratch-canvas"></canvas>
+                <div class="particles" id="particles"></div>
+            </div>
         </div>
 
         <div class="instruction">
@@ -434,8 +537,17 @@
                 
                 setTimeout(() => {
                     this.canvas.style.display = 'none';
-                    document.querySelector('.instruction').innerHTML = '<p>📱 Scan the QR code with your phone</p>';
+                    
+                    // Hide the original instruction text
+                    document.querySelector('.instruction').style.display = 'none';
                     document.getElementById('skipButton').style.display = 'none';
+                    
+                    // Create overlay button container and inject it into label-container
+                    const labelContainer = document.querySelector('.label-container');
+                    const buttonOverlay = document.createElement('div');
+                    buttonOverlay.className = 'button-overlay';
+                    buttonOverlay.innerHTML = '<button class="scan-button" onclick="alert(\'Point your phone camera at the QR code on screen to verify this product\')"><span class="scan-button-icon">📱</span>Scan With Phone</button>';
+                    labelContainer.appendChild(buttonOverlay);
                 }, 500);
             }
         }
