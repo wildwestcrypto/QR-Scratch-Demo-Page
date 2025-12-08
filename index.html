@@ -32,7 +32,8 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         .demo-container {
@@ -71,6 +72,7 @@
             position: relative;
             display: inline-block;
             max-width: 100%;
+            max-height: 75vh;
             border: 1px solid rgba(0, 0, 0, 0.18);
             border-radius: 16px;
             background: rgba(12, 16, 18, 0.88);
@@ -115,6 +117,8 @@
             display: block;
             width: 100%;
             height: auto;
+            max-height: 75vh;
+            object-fit: contain;
             user-select: none;
             border-radius: 12px;
             filter: contrast(0.96) saturate(0.94) brightness(0.97);
@@ -403,6 +407,46 @@
             .scan-button {
                 font-size: 1.1em;
                 padding: 14px 30px;
+            }
+        }
+
+        @media (max-width: 1280px) {
+            /* Small laptops - reduce button sizes slightly and faster fade */
+            .scratch-prompt-button {
+                font-size: 1.1em;
+                padding: 14px 32px;
+            }
+
+            .scan-button {
+                font-size: 1.1em;
+                padding: 14px 32px;
+            }
+
+            .button-overlay {
+                top: 73%;
+            }
+
+            .scratch-prompt-overlay {
+                top: 27%;
+            }
+        }
+
+        @media (max-height: 800px) {
+            /* Small viewport height - constrain label further */
+            .label-container {
+                max-height: 65vh;
+            }
+
+            .base-label {
+                max-height: 65vh;
+            }
+
+            .header {
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 2.2em;
             }
         }
     </style>
